@@ -60,18 +60,16 @@ var CennVess = function (element) {
 		
 		var largest = this.dataSets[this.sorted[0][0]]
 		var smallest = this.dataSets[this.sorted[1][0]]
-		
-		
-		console.log( this.findCircleArea ( largest["diameter"] ) )
-		console.log( this.findCircleArea ( smallest["diameter"] ) )
+		console.log(overlapRatio);
 		console.log(overlapArea);
-		console.log( overlapArea / this.findCircleArea ( largest["diameter"]));
 		
 		this.centerDistance = this.findIntersectDistance(largest["diameter"],
 														smallest["diameter"],
 														overlapArea);
 														
 		console.log(this.centerDistance);
+		console.log("");
+														
 		smallest["y"] = this.element.height/2;
 		smallest["x"] = this.centerDistance + largest["x"];
 		
@@ -134,7 +132,11 @@ var CennVess = function (element) {
 	}
 	// Calculate intersection area
 
-	this.findIntersectArea = function (r, R, d) {
+	this.findIntersectArea = function (r, R, d, depth) {
+		if ( depth> 10) {
+			return 999999999;
+		}
+	
 		if(R < r){
 			// swap
 			s = r;
@@ -147,6 +149,13 @@ var CennVess = function (element) {
 		var part1 = r*r*Math.acos((d*d + r*r - R*R)/(2*d*r));
 		var part2 = R*R*Math.acos((d*d + R*R - r*r)/(2*d*R));
 		var part3 = 0.5*Math.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R));
+		
+		if( isNaN(part1) || isNaN(part2) || isNaN(part3) ) {
+			console.log("Mistake...", depth)
+			return this.findIntersectArea(r+0.02, R+0.02, d, depth+1);
+		}
+		
+		//console.log( part1, "+", part2, "-", part3 );
 
 		var intersectionArea = part1 + part2 - part3;
 		return intersectionArea;
@@ -157,10 +166,12 @@ var CennVess = function (element) {
 		var distance = (diameterOne/2) + (diameterTwo/2);
 		var currentArea = 0;
 		
-		while( currentArea < overlap ) {
-			currentArea = this.findIntersectArea( diameterOne/2, diameterTwo/2, distance);
+		console.log(  diameterOne/2, diameterTwo/2, distance )
+		
+		do {
+			currentArea = this.findIntersectArea( diameterOne/2, diameterTwo/2, distance, 0);
 			distance-= 0.001;
-		}
+		} while( currentArea < overlap )
 		
 		return distance;
 	}
@@ -191,11 +202,8 @@ var CennVess = function (element) {
 
 	// Draw overlapping circles
 	
-	this.drawCircles = function () {
-		console.log(this.dataSets);
-		
+	this.drawCircles = function () {	
 		for ( c in this.dataSets ) {
-			console.log(this.dataSets[c]);
 			this.drawCircle( this.dataSets[c].x, this.dataSets[c].y, this.dataSets[c].diameter, this.dataSets[c].color );
 		}
 	}
@@ -213,7 +221,6 @@ var CennVess = function (element) {
 		for ( c in this.dataSets ) {
 			var text = this.dataSets[c].size;
 			var x = this.dataSets[c].x - (this.context.measureText(text)["width"]/2);
-			console.log(x);
 			var y = this.dataSets[c].y + (this.textSize/2);
 			
 			
@@ -222,14 +229,13 @@ var CennVess = function (element) {
 		
 		centerX =  this.dataSets[this.sorted[0][0]].x + this.chord;
 		centerX -= (this.context.measureText(this.overlap)["width"]/2);
-		console.log(centerX);
 		centerY = this.element.height/2 - (this.textSize);
 		this.context.fillText(this.overlap, centerX, centerY);
 		
-		
-		
-		
-		
+	}
+	
+	this.clear = function() {
+		this.context.clearRect ( 0,0,this.element.width, this.element.height );
 	}
 
 	// Initialize

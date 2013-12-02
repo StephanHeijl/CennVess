@@ -5,17 +5,32 @@
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="cennvess.css"/>
 		<script src="cennvess.js"></script>
+		<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 	</head>
 	<body>
 		<h1> CennVess </h1>
 		<!-- Van Stephan voor Leonoor -->
+		<input type="number" value="" placeholder="Dataset 1 grootte" id="d1"/> <br/>
+		<input type="number" value="" placeholder="Dataset 2 grootte" id="d2"/> <br/>
+		<input type="number" value="" placeholder="Overlap" id="o"/> <br/>
+		
 		<canvas id="cennvess" width="750" height="400"></canvas>
 		
 		<script>
-			CV = new CennVess("cennvess");
-			CV.clear();
-			CV.addData( 100, 100, 10 );
-			CV.start();
+			$(function() {
+				CV = new CennVess("cennvess");
+				CV.clear();
+				CV.addData( 100, 100, 10 );
+				CV.start();
+				
+				$("input[type=number]").change(function() {
+					CV.clear();
+					if(  $("#d1").val() && $("#d2").val() &&  $("#o").val() ) {
+						CV.addData( $("#d1").val(), $("#d2").val(), $("#o").val() );
+					}
+					CV.start();
+				});	
+			});
 		</script>
 	</body>
 </html>
