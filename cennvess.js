@@ -6,10 +6,12 @@ var CennVess = function (element) {
 		this.sizeTwo = 0;
 		this.overlap = 0;
 		this.padding = 0;
+		this.textSize = 30;
 		this.dataSets = {};
-		this.colors = [];
+		this.colors = ["rgba(255,0,0,0.5)", "rgba(0,0,255,0.5)"];
 		this.maxDiameter = this.maxDiameter();
 		this.sorted = []
+		this.centerDistance = 0;
 	}
 
 	// Set canvas layout
@@ -25,6 +27,12 @@ var CennVess = function (element) {
 
 	this.addColor = function (color) {
 		this.colors.push(color);
+	}
+	
+	this.lockColors = function () {
+		for ( c in this.dataSets ) {
+			this.dataSets[c]["color"] = this.colors[c];
+		}
 	}
 
 	// Set data sets
@@ -44,7 +52,9 @@ var CennVess = function (element) {
 	}
 
 	this.start = function () {
+		this.lockColors();
 		this.setCircleSizeRelative();
+		
 		var overlapRatio = this.findOverlapRatio( this.sizeOne, this.sizeTwo, this.overlap );
 		var overlapArea = this.findOverlapArea( overlapRatio );
 		
@@ -57,15 +67,16 @@ var CennVess = function (element) {
 		console.log(overlapArea);
 		console.log( overlapArea / this.findCircleArea ( largest["diameter"]));
 		
-		var centerDistance = this.findIntersectDistance(largest["diameter"],
+		this.centerDistance = this.findIntersectDistance(largest["diameter"],
 														smallest["diameter"],
 														overlapArea);
 														
-		console.log(centerDistance);
+		console.log(this.centerDistance);
 		smallest["y"] = this.element.height/2;
-		smallest["x"] = centerDistance + largest["x"];
+		smallest["x"] = this.centerDistance + largest["x"];
 		
 		this.drawCircles();
+		this.drawText(1, 1, 2, 0.5);
 	}
 
 	// Find max diameter for circles
@@ -130,6 +141,9 @@ var CennVess = function (element) {
 			r = R;
 			R = s;
 		}
+		
+		this.chord = (d*d + r*r - R*R)/(2*d);
+		
 		var part1 = r*r*Math.acos((d*d + r*r - R*R)/(2*d*r));
 		var part2 = R*R*Math.acos((d*d + R*R - r*r)/(2*d*R));
 		var part3 = 0.5*Math.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R));
@@ -153,7 +167,7 @@ var CennVess = function (element) {
 
 	// Calculate overlap factor
 	this.findOverlapRatio = function(sizeOne, sizeTwo, overlap) {
-		return overlap / Math.max(sizeOne, sizeTwo);
+		return overlap / Math.min(sizeOne, sizeTwo);
 	}
 
 	// Calculate overlap area
@@ -166,24 +180,57 @@ var CennVess = function (element) {
 	// Calculate overlap position
 	
 	// Draw circle
-	this.drawCircle = function( x, y, d ) {
+	this.drawCircle = function( x, y, d, color ) {
 		var ctx = this.context;
 		ctx.beginPath();
 		ctx.arc(x,y,d/2,0,2*Math.PI);
 		ctx.stroke();
+		ctx.fillStyle = color;
+		ctx.fill();
 	}
 
 	// Draw overlapping circles
 	
 	this.drawCircles = function () {
 		console.log(this.dataSets);
+		
 		for ( c in this.dataSets ) {
 			console.log(this.dataSets[c]);
-			this.drawCircle( this.dataSets[c].x, this.dataSets[c].y, this.dataSets[c].diameter );
+			this.drawCircle( this.dataSets[c].x, this.dataSets[c].y, this.dataSets[c].diameter, this.dataSets[c].color );
 		}
 	}
 
 	// Draw text
+	this.drawText = function( sX, sY, sBlur, sOp ) {
+	
+		this.context.shadowColor = "rgba(0,0,0," + sOp + ")";
+		this.context.shadowOffsetX = sX;
+		this.context.shadowOffsetY = sY;
+		this.context.shadowBlur = sBlur;
+		this.context.fillStyle = "white";
+				
+		this.context.font= this.textSize + "px Arial";
+		for ( c in this.dataSets ) {
+			var text = this.dataSets[c].size;
+			var x = this.dataSets[c].x - (this.context.measureText(text)["width"]/2);
+			console.log(x);
+			var y = this.dataSets[c].y + (this.textSize/2);
+			
+			
+			this.context.fillText(text, x, y);
+		}
+		
+		centerX =  this.dataSets[this.sorted[0][0]].x + this.chord;
+		centerX -= (this.context.measureText(this.overlap)["width"]/2);
+		console.log(centerX);
+		centerY = this.element.height/2 - (this.textSize);
+		this.context.fillText(this.overlap, centerX, centerY);
+		
+		
+		
+		
+		
+	}
 
 	// Initialize
 	this.init(element);
