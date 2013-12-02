@@ -2,15 +2,19 @@
 <html>
 	<head> 
 		<title> CennVess </title>
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="cennvess.css"/>
 		<script src="cennvess.js"></script>
 	</head>
 	<body>
 		<h1> CennVess </h1>
-		<canvas id="cennvess"></canvas>
+		<!-- Van Stephan voor Leonoor -->
+		<canvas id="cennvess" width="750" height="400"></canvas>
 		
 		<script>
 			CV = new CennVess("cennvess");
+			CV.addData( 300, 150, 50 );
+			CV.start();
 		</script>
 	</body>
 </html>
