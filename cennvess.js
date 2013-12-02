@@ -227,7 +227,7 @@ var CennVess = function (element) {
 			this.context.fillText(text, x, y);
 		}
 		
-		centerX =  this.dataSets[this.sorted[0][0]].x + this.chord;
+		centerX =  this.dataSets[this.sorted[1][0]].x -  this.chord;
 		centerX -= (this.context.measureText(this.overlap)["width"]/2);
 		centerY = this.element.height/2 - (this.textSize);
 		this.context.fillText(this.overlap, centerX, centerY);
