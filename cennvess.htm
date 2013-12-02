@@ -10,9 +10,37 @@
 	<body>
 		<h1> CennVess </h1>
 		<!-- Van Stephan voor Leonoor -->
-		<input type="number" value="" placeholder="Dataset 1 grootte" id="d1"/> <br/>
-		<input type="number" value="" placeholder="Dataset 2 grootte" id="d2"/> <br/>
-		<input type="number" value="" placeholder="Overlap" id="o"/> <br/>
+		
+		<table>
+			<tr>
+				<td> Dataset 1 </td>
+				<td> <input type="number" value="" placeholder="Dataset 1 grootte" id="d1" min=0/> </td>
+			</tr>
+			<tr>
+				<td> Dataset 2 </td>
+				<td> <input type="number" value="" placeholder="Dataset 2 grootte" id="d2" min=0/> </td>
+			</tr>
+			<tr>
+				<td> Overlap </td>
+				<td> <input type="number" value="" placeholder="Overlap" id="o" min=0/> </td>
+			</tr>
+			
+			<tr>
+				<td> Export </td>
+				<td><button id="open"> Open as image in separate tab</button> </td>
+			</tr>
+			
+			<tr>
+				<td> Width </td>
+				<td> <input type="number" value="750" placeholder="Width" id="w" min=0/> </td>
+			</tr>
+			<tr>
+				<td> Height </td>
+				<td> <input type="number" value="400" placeholder="Height" id="h" min=0/> </td>
+			</tr>
+		</table>
+		
+		
 		
 		<canvas id="cennvess" width="750" height="400"></canvas>
 		
@@ -24,12 +52,15 @@
 				CV.start();
 				
 				$("input[type=number]").change(function() {
-					CV.clear();
 					if(  $("#d1").val() && $("#d2").val() &&  $("#o").val() ) {
 						CV.addData( $("#d1").val(), $("#d2").val(), $("#o").val() );
+						$("#cennvess").attr({"width": $("#w").val() ,"height": $("#h").val()});
+						CV.clear();
 					}
 					CV.start();
 				});	
+				
+				$("button#open").click(function() { CV.openAsImage() });
 			});
 		</script>
 	</body>

@@ -9,7 +9,7 @@ var CennVess = function (element) {
 		this.textSize = 30;
 		this.dataSets = {};
 		this.colors = ["rgba(255,0,0,0.5)", "rgba(0,0,255,0.5)"];
-		this.maxDiameter = this.maxDiameter();
+		this.maxD = this.maxDiameter();
 		this.sorted = []
 		this.centerDistance = 0;
 	}
@@ -17,7 +17,7 @@ var CennVess = function (element) {
 	// Set canvas layout
 	this.setLayout = function (padding) {
 		this.padding = padding;
-		this.maxDiameter = this.maxDiameter();
+		this.maxD = this.maxDiameter();
 	}
 
 	// Colors
@@ -111,13 +111,13 @@ var CennVess = function (element) {
 		
 		ratio = this.sorted[1][1]/this.sorted[0][1];
 				
-		this.dataSets[smallest]["diameter"] = this.maxDiameter * ratio;
-		this.dataSets[smallest]["diameter"] = this.maxDiameter * ratio;
+		this.dataSets[smallest]["diameter"] = this.maxD * ratio;
+		this.dataSets[smallest]["diameter"] = this.maxD * ratio;
 		
 		// We can also set the x and y coordinates
 		
-		this.dataSets[largest]["diameter"]	= this.maxDiameter;
-		this.dataSets[largest]["x"]	= this.maxDiameter/2;
+		this.dataSets[largest]["diameter"]	= this.maxD;
+		this.dataSets[largest]["x"]	= this.maxD/2;
 		this.dataSets[largest]["y"]	= this.element.height/2;
 	}
 
@@ -236,6 +236,11 @@ var CennVess = function (element) {
 	
 	this.clear = function() {
 		this.context.clearRect ( 0,0,this.element.width, this.element.height );
+		this.maxD = this.maxDiameter();
+	}
+	
+	this.openAsImage = function() {
+		window.open( this.element.toDataURL() );
 	}
 
 	// Initialize
