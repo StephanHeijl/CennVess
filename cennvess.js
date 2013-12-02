@@ -9,6 +9,7 @@ var CennVess = function (element) {
 		this.dataSets = {};
 		this.colors = [];
 		this.maxDiameter = this.maxDiameter();
+		this.sorted = []
 	}
 
 	// Set canvas layout
@@ -43,7 +44,28 @@ var CennVess = function (element) {
 	}
 
 	this.start = function () {
-		this.findCircleSizeRelative();
+		this.setCircleSizeRelative();
+		var overlapRatio = this.findOverlapRatio( this.sizeOne, this.sizeTwo, this.overlap );
+		var overlapArea = this.findOverlapArea( overlapRatio );
+		
+		var largest = this.dataSets[this.sorted[0][0]]
+		var smallest = this.dataSets[this.sorted[1][0]]
+		
+		
+		console.log( this.findCircleArea ( largest["diameter"] ) )
+		console.log( this.findCircleArea ( smallest["diameter"] ) )
+		console.log(overlapArea);
+		console.log( overlapArea / this.findCircleArea ( largest["diameter"]));
+		
+		var centerDistance = this.findIntersectDistance(largest["diameter"],
+														smallest["diameter"],
+														overlapArea);
+														
+		console.log(centerDistance);
+		smallest["y"] = this.element.height/2;
+		smallest["x"] = centerDistance + largest["x"];
+		
+		this.drawCircles();
 	}
 
 	// Find max diameter for circles
@@ -71,35 +93,28 @@ var CennVess = function (element) {
 		return sortable;
 	}
 
-	// Reverse array
-	this.reverseArray = function (array) {
-		var i = null;
-		var r = null;
-		for (i = 0, r = length - 1; i < r; i += 1, r -= 1) {
-			var left = array[i];
-			var right = array[r];
-			left ^= right;
-			right ^= left;
-			left ^= right;
-			array[i] = left;
-			array[r] = right;
-		}
-		return array;
-	}
-
 	// Calculate relative size
-	this.findCircleSizeRelative = function () {
-		console.log(this.dataSets);
-		var sorted = this.sortOnKey(this.dataSets, "size");
-		console.log(sorted)
-		sorted.reverse()
-		console.log(sorted)
-
+	this.setCircleSizeRelative = function () {
+		this.sorted = this.sortOnKey(this.dataSets, "size");
+		this.sorted.reverse()
+		largest = this.sorted[0][0];
+		smallest = this.sorted[1][0];
+		
+		ratio = this.sorted[1][1]/this.sorted[0][1];
+				
+		this.dataSets[smallest]["diameter"] = this.maxDiameter * ratio;
+		this.dataSets[smallest]["diameter"] = this.maxDiameter * ratio;
+		
+		// We can also set the x and y coordinates
+		
+		this.dataSets[largest]["diameter"]	= this.maxDiameter;
+		this.dataSets[largest]["x"]	= this.maxDiameter/2;
+		this.dataSets[largest]["y"]	= this.element.height/2;
 	}
 
 	// Calculate circle area
-	this.findArea = function (diameter) {
-		return Math.Pi * ((diameter^2) / 4)
+	this.findCircleArea = function (diameter) {
+		return Math.PI * (this.sqr(diameter) / 4)
 	}
 
 	// Find square
@@ -108,13 +123,19 @@ var CennVess = function (element) {
 	}
 	// Calculate intersection area
 
-	this.findIntersectArea = function (r1, R2, d) {
-		var sqrt = Math.sqrt;
-		var sqr = this.sqr;
-		var arccos = Math.acos;
-		
-		var A= sqr(r1)*arccos((sqr(d)+sqr(r1)-sqr(R2))/(2*d*r1)) + sqr(R2)*arccos((sqr(d)+sqr(R2)-sqr(r1))/(2*d*R2)) - -.5*sqrt((-d+r1+R2)*(d+r1-R2)*(d-r1+R2)*(d+r1+R2));
-		return A;
+	this.findIntersectArea = function (r, R, d) {
+		if(R < r){
+			// swap
+			s = r;
+			r = R;
+			R = s;
+		}
+		var part1 = r*r*Math.acos((d*d + r*r - R*R)/(2*d*r));
+		var part2 = R*R*Math.acos((d*d + R*R - r*r)/(2*d*R));
+		var part3 = 0.5*Math.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R));
+
+		var intersectionArea = part1 + part2 - part3;
+		return intersectionArea;
 	}
 
 	// Calculate intersection distance
@@ -124,30 +145,43 @@ var CennVess = function (element) {
 		
 		while( currentArea < overlap ) {
 			currentArea = this.findIntersectArea( diameterOne/2, diameterTwo/2, distance);
-			distance--;
+			distance-= 0.001;
 		}
 		
 		return distance;
-
 	}
 
-	// Calculate relative area
-
-	// Calculate overlap size
+	// Calculate overlap factor
+	this.findOverlapRatio = function(sizeOne, sizeTwo, overlap) {
+		return overlap / Math.max(sizeOne, sizeTwo);
+	}
 
 	// Calculate overlap area
+	this.findOverlapArea = function(ratio, area) {
+		var maxDiameter = this.dataSets[this.sorted[1][0]]["diameter"];
+		var area = this.findCircleArea( maxDiameter );		
+		return ratio * area;
+	}
 
 	// Calculate overlap position
 	
 	// Draw circle
-	this.drawCircle = function( x, y, r ) {
+	this.drawCircle = function( x, y, d ) {
 		var ctx = this.context;
 		ctx.beginPath();
-		ctx.arc(x,y,r,0,2*Math.PI);
+		ctx.arc(x,y,d/2,0,2*Math.PI);
 		ctx.stroke();
 	}
 
 	// Draw overlapping circles
+	
+	this.drawCircles = function () {
+		console.log(this.dataSets);
+		for ( c in this.dataSets ) {
+			console.log(this.dataSets[c]);
+			this.drawCircle( this.dataSets[c].x, this.dataSets[c].y, this.dataSets[c].diameter );
+		}
+	}
 
 	// Draw text
 
